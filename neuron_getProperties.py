@@ -310,15 +310,7 @@ def tip_coords(geo, seg_tips):
       tip_coords[k].append(t.coordAt(1))
   return tip_coords
   
-
-def simplify_asymmetry(seg_lengths, seg_tips):
-  # simplification of asymmetry data
-  sumlengths = sum([seg_lengths[k] for k in seg_lengths.keys()])
-  sumtips = sum([len(seg_tips[k]) for k in seg_tips.keys()])
-  lengths = [seg_lengths[k]/(sumlengths-seg_lengths[k]) for k in seg_lengths.keys()]
-  tips = [float(len(seg_tips[k]))/float((sumtips-len(seg_tips[k]))) for k in seg_tips.keys()]
-  return lengths, tips
-
+  
 
 
 ######################################################################
@@ -687,21 +679,40 @@ def get_distances(geo, multi=None):
   """
   Return the "distances", the distance from each ellipse point to the
   closest point of the neuron's skeleton.
-  
+  """
   if multi is None:
     ellipse_pts, _, _ = build_ellipse(geo)
     nodes = getNoSomaPoints(geo)
     distances = []
+    ellipse_pts = ellipse_pts[::100]
     for e in ellipse_pts:
       _, d = closestPoint(e, nodes)
-      distances.append(e)
+      if ellipse_pts.index(e)%100==0:
+        print('%i (of %i) points sampled' %(ellipse_pts.index(e), len(ellipse_pts)))
+      distances.append(d)
     return distances
   elif type(multi) is int:
     from multiprocessing import Pool
     p = Pool(multi)
-    distances = pool.map(closestPointPool,"""
-  return
+    # distances = pool.map(closestPointPool, 
+  return distances
   
+
+#######################################################################
+# simple branch stuff
+
+def branch_lengths(geo, locations=False):
+  lengths = [b.length for b in geo.branches]
+  locations = [b.coordAt(0.5) for b in geo.branches]
+  if locations:
+    return lengths, locations
+  else:
+    return lengths
+
+
+def branch_order(geo):
+  return [b.branchOrder for b in geo.branches]
+    
 
 
 
